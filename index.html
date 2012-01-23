@@ -1,0 +1,30 @@
+<html>
+<head>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+jQuery(document).ready(function() { 
+
+    var socket = io.connect('http://localhost');
+
+    socket.on('news', function (data) {
+        $('#dialog').append(data.msg+"<br>")
+    });
+    
+    $('#send').click(function() {
+        msg = $('#stuff').val()
+        $('#stuff').val('')
+        socket.emit('my other event', { msg:msg });
+    });
+    
+});
+</script>
+</head>
+<body>
+<div id="dialog" style="width:600px;height:300px;border:solid silver 1px">
+</div>
+<textarea id="stuff" style="width:600px;height:60px;">
+</textarea>
+<input id="send" type="button" value="Send">
+</body>
+</html>
