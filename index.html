@@ -8,14 +8,15 @@ jQuery(document).ready(function() {
     var socket = io.connect('http://localhost');
 
     socket.on('news', function (data) {
-        $('#dialog').append(data.sender+": "+data.msg+"<br>")
+        msg = data.msg.replace(/\n/g,'<br>')
+        $('#dialog').append(data.sender+": "+msg+'<br>')
     });
     
     $('#stuff').keyup(function(e) {
-        if(e.keyCode == 13) {
-            msg  = $('#stuff').val()
+        if(e.keyCode == 13 && !e.shiftKey) {
+            msg  = $('#stuff').val().trim()
             if (msg != "\n") {
-                nick = $('#nick').val()
+                nick = $('#nick').val().trim()
                 socket.emit('my other event', { msg:msg, sender:nick });
             }
             $('#stuff').val('')
