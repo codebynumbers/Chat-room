@@ -16,11 +16,26 @@ jQuery(document).ready(function() {
     socket.on('news', function (data) {
         msg = data.msg.replace(/\n/g,'<br>')
 		console.log(data)
-        $('#users').html(data.senderlist.join('<br>'))
         $('#dialog').append('<span style="color:'+data.color+'">'+data.sender+": "+msg+'</span><br>')
 		$("#dialog").attr({ scrollTop: $("#dialog").attr("scrollHeight") });
     });
     
+    socket.on('namechange', function (data) {
+        console.log(data)
+        buffer = ''
+        for (i=0; i<data.senderlist.length; i++) {
+            buffer += '<span style="color:'+data.colors[i%data.colors.length]+'">'+data.senderlist[i]+'</span><br>'
+        }
+        $('#users').html(buffer)
+
+		// system message
+        msg = data.msg.replace(/\n/g,'<br>')
+        $('#dialog').append('<span style="color:'+data.color+'">'+data.sender+": "+msg+'</span><br>')
+		$("#dialog").attr({ scrollTop: $("#dialog").attr("scrollHeight") });
+    });
+
+
+
     $('#stuff').keyup(function(e) {
         if(e.keyCode == 13 && !e.shiftKey) {
             msg  = $('#stuff').val().trim()

@@ -28,13 +28,13 @@ io.sockets.on('connection', function (socket) {
 		senderlist.push(data.sender)
     }
     pos = senderlist.indexOf(data.sender)
-    io.sockets.emit('news', {msg:data.msg, sender:data.sender, color:colors[pos % colors.length], senderlist:senderlist} );
+    io.sockets.emit('news', {msg:data.msg, sender:data.sender, color:colors[pos % colors.length]} );
   });
 
   socket.on('namechange', function (data) {
     console.log(data);
     pos = senderlist.indexOf(data.old_sender);
 	senderlist[pos] = data.sender
-    io.sockets.emit('news', {msg:data.old_sender+" now known as "+data.sender, sender:"System", color:'black', senderlist:senderlist} );
+    io.sockets.emit('namechange', {msg:data.old_sender+" now known as "+data.sender, sender:"System", color:'black', senderlist:senderlist, colors:colors} );
   });
 });
