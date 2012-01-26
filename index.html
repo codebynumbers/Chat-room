@@ -1,5 +1,11 @@
 <html>
 <head>
+<style>
+#chatwin {
+font-family: Verdana,Arial,sans-serif;
+font-size:10pt;
+}
+</style>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -34,11 +40,13 @@ jQuery(document).ready(function() {
 </script>
 </head>
 <body>
+<div id="chatwin" style="width:604px">
 <div id="dialog" style="width:400px;height:300px;border:solid silver 1px;float:left;overflow-y:scroll">
 </div>
 <div id="users" style="width:200px;height:300px;border:solid silver 1px;float:left">
 </div>
-<input id="nick" style="width:400px;clear:left" value="Anonymous Coward"><br>
-<textarea id="stuff" style="width:600px;height:60px;clear:left"></textarea>
+<div style="width:100px;float:left;clear:left">Nickname:</div><input id="nick" style="width:504px;float:left" value=""><br>
+<textarea id="stuff" style="width:604px;height:60px;clear:left"></textarea>
+</div>
 </body>
 </html>
