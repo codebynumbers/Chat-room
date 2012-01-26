@@ -5,11 +5,14 @@
 <script>
 jQuery(document).ready(function() { 
 
-    var socket = io.connect('http://localhost');
-
+    var socket = io.connect('http://50.17.232.32/');
+	var nick = $('#nick').val()
     socket.on('news', function (data) {
         msg = data.msg.replace(/\n/g,'<br>')
-        $('#dialog').append(data.sender+": "+msg+'<br>')
+		console.log(data)
+        $('#users').html(data.senderlist.join('<br>'))
+        $('#dialog').append('<span style="color:'+data.color+'">'+data.sender+": "+msg+'</span><br>')
+		$("#dialog").attr({ scrollTop: $("#dialog").attr("scrollHeight") });
     });
     
     $('#stuff').keyup(function(e) {
@@ -22,14 +25,20 @@ jQuery(document).ready(function() {
             $('#stuff').val('')
         }
     });
-    
+
+    $('#nick').change(function(){
+	    socket.emit('namechange', { old_sender:nick, sender:$(this).val().trim() });
+        nick = $(this).val().trim()
+    });
 });
 </script>
 </head>
 <body>
-<div id="dialog" style="width:600px;height:300px;border:solid silver 1px">
+<div id="dialog" style="width:400px;height:300px;border:solid silver 1px;float:left;overflow-y:scroll">
 </div>
-<input id="nick" style="width:600px;" value="Anonymous Coward"><br>
-<textarea id="stuff" style="width:600px;height:60px;"></textarea>
+<div id="users" style="width:200px;height:300px;border:solid silver 1px;float:left">
+</div>
+<input id="nick" style="width:400px;clear:left" value="Anonymous Coward"><br>
+<textarea id="stuff" style="width:600px;height:60px;clear:left"></textarea>
 </body>
 </html>
