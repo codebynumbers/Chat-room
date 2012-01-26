@@ -1,9 +1,16 @@
 Node.js / jQuery / socket.io Chatroom
 
-Meant to be simple and easy to get up and running/drop into a site. 
+Meant to be simple and easy to get up and running/drop into a site (assuming you can run yout won node server)
 
-In it's very early stages, but hope to add option for configure layout size and colors.
+In it's very early stages, but plan to add:
+ - options for configuring layout size and colors.
+ - sign on once via modal, change nichname via modal.
+ - broadcast sender list only when neccesary
+ - ban users via admin password
+ - more color options / formatting for user dialoags 
+ - general prettiness
+ - color user list to match dialog
+ - show count of users in room
 
-Also need's an admin password for features like boot misbehavors.
 
 
