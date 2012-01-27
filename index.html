@@ -24,7 +24,7 @@ jQuery(document).ready(function() {
         console.log(data)
         buffer = ''
         for (i=0; i<data.senderlist.length; i++) {
-            buffer += '<span style="color:'+data.colors[i%data.colors.length]+'">'+data.senderlist[i]+'</span><br>'
+            buffer += '<span style="color:'+data.senderlist[i]['color']+'">'+data.senderlist[i]['nick']+'</span><br>'
         }
         $('#users').html(buffer)
 

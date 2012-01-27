@@ -15,26 +15,45 @@ function handler (req, res) {
       res.writeHead(500);
       return res.end('Error loading index.html');
     }
-
     res.writeHead(200);
     res.end(data);
   });
 }
 
+function lookup(sender){
+	found = -1
+	for (i=0; i<senderlist.length; i++){
+		if(senderlist[i]['nick'] == sender){
+			found = i
+			break;
+		}
+	}
+	return found
+}
+
 io.sockets.on('connection', function (socket) {
   socket.on('my other event', function (data) {
-    pos = senderlist.indexOf(data.sender)
-    if (pos == -1){
-		senderlist.push(data.sender)
-    }
-    pos = senderlist.indexOf(data.sender)
-    io.sockets.emit('news', {msg:data.msg, sender:data.sender, color:colors[pos % colors.length]} );
+    pos = lookup(data.sender)
+    io.sockets.emit('news', {msg:data.msg, sender:data.sender, color:senderlist[pos]['color']} );
   });
 
   socket.on('namechange', function (data) {
     console.log(data);
-    pos = senderlist.indexOf(data.old_sender);
-	senderlist[pos] = data.sender
-    io.sockets.emit('namechange', {msg:data.old_sender+" now known as "+data.sender, sender:"System", color:'black', senderlist:senderlist, colors:colors} );
+	if (data.old_sender == '') {
+		msg = data.sender+' has joined the chat' 
+	} else {
+		msg = data.old_sender+'now known as '+data.sender
+	}
+
+    pos = lookup(data.old_sender)
+	// add new sender to list
+    if (pos == -1){
+		color = colors[Math.floor(Math.random() * colors.length)]
+		senderlist.push({'nick':data.sender, 'color':color})
+		pos = senderlist.length-1
+	}
+	// change name
+	senderlist[pos]['nick'] = data.sender
+    io.sockets.emit('namechange', {msg:msg, sender:"SYSTEM", color:'black', senderlist:senderlist} );
   });
 });
