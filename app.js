@@ -32,9 +32,13 @@ function lookup(sender){
 }
 
 io.sockets.on('connection', function (socket) {
-  socket.on('my other event', function (data) {
-    pos = lookup(data.sender)
-    io.sockets.emit('news', {msg:data.msg, sender:data.sender, color:senderlist[pos]['color']} );
+
+  socket.on('speak', function (data) {
+	// require a sender
+	if (data.sender != '') {
+	    pos = lookup(data.sender)
+    	io.sockets.emit('news', {msg:data.msg, sender:data.sender, color:senderlist[pos]['color']} );
+	}
   });
 
   socket.on('namechange', function (data) {
@@ -42,7 +46,7 @@ io.sockets.on('connection', function (socket) {
 	if (data.old_sender == '') {
 		msg = data.sender+' has joined the chat' 
 	} else {
-		msg = data.old_sender+'now known as '+data.sender
+		msg = data.old_sender+' now known as '+data.sender
 	}
 
     pos = lookup(data.old_sender)

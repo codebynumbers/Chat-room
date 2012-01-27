@@ -37,10 +37,14 @@ jQuery(document).ready(function() {
 
     $('#stuff').keyup(function(e) {
         if(e.keyCode == 13 && !e.shiftKey) {
+			if ($('#nick').val().trim() == '') {
+				alert('You must create a nickname first')
+				return
+			}
             msg  = $('#stuff').val().trim()
             if (msg != "\n") {
                 nick = $('#nick').val().trim()
-                socket.emit('my other event', { msg:msg, sender:nick });
+                socket.emit('speak', { msg:msg, sender:nick });
             }
             $('#stuff').val('')
         }
