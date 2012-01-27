@@ -27,7 +27,6 @@ jQuery(document).ready(function() {
             buffer += '<span style="color:'+data.senderlist[i]['color']+'">'+data.senderlist[i]['nick']+'</span><br>'
         }
         $('#users').html(buffer)
-
 		// system message
         msg = data.msg.replace(/\n/g,'<br>')
         $('#dialog').append('<span style="color:'+data.color+'">'+data.sender+": "+msg+'</span><br>')
@@ -51,6 +50,12 @@ jQuery(document).ready(function() {
 	    socket.emit('namechange', { old_sender:nick, sender:$(this).val().trim() });
         nick = $(this).val().trim()
     });
+
+
+    nick = $('#nick').val().trim()
+	if ( nick != '') {
+	    socket.emit('namechange', { old_sender:'', sender:nick });
+	}
 });
 </script>
 </head>

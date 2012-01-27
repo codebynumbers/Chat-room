@@ -38,7 +38,7 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on('namechange', function (data) {
-    console.log(data);
+    //console.log(data);
 	if (data.old_sender == '') {
 		msg = data.sender+' has joined the chat' 
 	} else {
