@@ -33,11 +33,13 @@ function lookup(sender){
 
 io.sockets.on('connection', function (socket) {
 
+  ip = socket.handshake.address;
+
   socket.on('speak', function (data) {
 	// require a sender
 	if (data.sender != '') {
 	    pos = lookup(data.sender)
-    	io.sockets.emit('news', {msg:data.msg, sender:data.sender, color:senderlist[pos]['color']} );
+    	io.sockets.emit('news', {msg:data.msg, sender:senderlist[pos]});
 	}
   });
 
@@ -53,7 +55,7 @@ io.sockets.on('connection', function (socket) {
 	// add new sender to list
     if (pos == -1){
 		color = colors[Math.floor(Math.random() * colors.length)]
-		senderlist.push({'nick':data.sender, 'color':color})
+		senderlist.push({'nick':data.sender, 'color':color, ip:ip})
 		pos = senderlist.length-1
 	}
 	// change name

@@ -16,7 +16,7 @@ jQuery(document).ready(function() {
     socket.on('news', function (data) {
         msg = data.msg.replace(/\n/g,'<br>')
 		console.log(data)
-        $('#dialog').append('<span style="color:'+data.color+'">'+data.sender+": "+msg+'</span><br>')
+        $('#dialog').append('<span style="color:'+data.sender.color+'">'+data.sender.nick+' &lt;'+data.sender.ip.address+'&gt;: '+msg+'</span><br>')
 		$("#dialog").attr({ scrollTop: $("#dialog").attr("scrollHeight") });
     });
     
