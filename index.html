@@ -11,7 +11,8 @@ font-size:10pt;
 <script>
 jQuery(document).ready(function() { 
 
-    var socket = io.connect('http://50.17.232.32/');
+    //var socket = io.connect('http://50.17.232.32/');
+    var socket = io.connect('/');
 	var nick = $('#nick').val()
     socket.on('news', function (data) {
         msg = data.msg.replace(/\n/g,'<br>')

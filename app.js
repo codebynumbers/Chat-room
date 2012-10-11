@@ -4,7 +4,7 @@ var app = require('http').createServer(handler)
 
 var senderlist = []
 
-app.listen(80);
+app.listen(process.env.PORT || 5000);
 
 colors = ['red','green','blue','orange','purple']
 

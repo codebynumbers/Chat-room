@@ -1,0 +1,13 @@
+{
+  "name": "Chat-room",
+  "version": "0.0.1",
+  "dependencies": {
+    "http":"",
+    "socket.io": "",
+    "fs":""
+  },
+  "engines": {
+    "node": "0.8.x",
+    "npm": "1.1.x"
+  }
+}
