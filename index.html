@@ -56,17 +56,11 @@ body {
 <script src="/socket.io/socket.io.js"></script>
 <script>
 jQuery(document).ready(function() { 
-    var is_admin = false;
     var socket = io.connect('/');
 	var nick = $('#nick').val()
     socket.on('news', function (data) {
         msg = data.msg.replace(/\n/g,'<br>')
-		console.log(data)
-        if (is_admin) {
-            $('#dialog').append('<span style="color:'+data.sender.color+'">'+data.sender.nick+' &lt;'+data.sender.ip.address+'&gt;: '+msg+'</span><br>')
-        } else {
-            $('#dialog').append('<span style="color:'+data.sender.color+'">'+data.sender.nick+': '+msg+'</span><br>')
-        }
+        $('#dialog').append('<span style="color:'+data.sender.color+'">&lt;'+data.sender.nick+'&gt;'+msg+'</span><br>')
 		$("#dialog").attr({ scrollTop: $("#dialog").attr("scrollHeight") });
     });
     
