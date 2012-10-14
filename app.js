@@ -2,11 +2,15 @@ var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
   , fs = require('fs')
 
-var senderlist = []
+var senderlist = [];
+
+// for game
+var selections = [];
+var game_enabled = true;
+
+var colors = ['red','green','blue','orange','purple']
 
 app.listen(process.env.PORT || 5000);
-
-colors = ['red','green','blue','orange','purple']
 
 function handler (req, res) {
   fs.readFile(__dirname + '/index.html',
@@ -43,10 +47,22 @@ io.sockets.on('connection', function (socket) {
 	}
   });
 
+  socket.on('choose', function (data) {
+	// require a sender
+	if (data.sender != '') {
+        selections.push(data.value)
+    	io.sockets.emit('gamenews', {selected:selections});
+	}
+  });
+
   socket.on('namechange', function (data) {
     //console.log(data);
 	if (data.old_sender == '') {
 		msg = data.sender+' has joined the chat' 
+        if ( game_enabled ) {
+            // push board data on join if game on
+        	io.sockets.emit('gamenews', {selected:selections});
+        }
 	} else {
 		msg = data.old_sender+' now known as '+data.sender
 	}

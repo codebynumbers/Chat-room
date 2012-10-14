@@ -4,6 +4,31 @@
 body {
  background-color:black;
 }
+table {
+ border:solid white 1px;
+ border-collapse:collapse;
+ margin:auto;
+}
+td {
+ color:white;
+ width:20px;
+ height:20px;
+ margin:0;
+ padding:0;
+ text-align:center;
+ border:solid white 1px;
+ border-collapse:collapse;
+}
+.red {
+ background-color:red;
+ font-weight:bold;
+}
+.black {
+ background-color:black;
+}
+.disabled {
+ background-color:silver; 
+}
 #chatwin {
  background-color:#DDD;
  font-family:  monospace;sans-serif;
@@ -18,7 +43,7 @@ body {
 }
 #dialog {
  padding:5px;
- width:390px;
+ width:430px;
  height:300px;
  border:solid silver 1px;
  float:left;
@@ -28,11 +53,20 @@ body {
 #users {
  padding:5px;
  background-color:#FDFDFD;
- width:190px;
+ width:150px;
  height:300px;
  border:solid silver 1px;
  float:left;
  overflow-y:scroll;
+ display:none;
+}
+#gameboard {
+ padding:5px;
+ background-color:green;
+ width:150px;
+ height:300px;
+ border:solid silver 1px;
+ float:left;
 }
 #label_nick {
  padding:5px;
@@ -58,6 +92,9 @@ body {
 jQuery(document).ready(function() { 
     var socket = io.connect('/');
 	var nick = $('#nick').val()
+    var numbers = {};
+    var chose = false;
+
     socket.on('news', function (data) {
         msg = data.msg.replace(/\n/g,'<br>')
         $('#dialog').append('<span style="color:'+data.sender.color+'">&lt;'+data.sender.nick+'&gt; '+msg+'</span><br>')
@@ -97,19 +134,60 @@ jQuery(document).ready(function() {
         nick = $(this).val().trim()
     });
 
-
     nick = $('#nick').val().trim()
 	if ( nick != '') {
 	    socket.emit('namechange', { old_sender:'', sender:nick });
 	}
+
+    // game stuff
+
+    $('td').click(function() {
+        if (!chose && !$(this).hasClass('disabled') && nick != '') {
+            $(this).addClass('disabled')
+            chose = true;
+            socket.emit('speak', { msg:nick+' chose '+$.trim($(this).html()), sender:nick });
+            socket.emit('choose', { value:$(this).html(), sender:nick });
+        }
+    });
+
+    socket.on('gamenews', function (data) {
+        console.log(data)
+        for (i=0; i<data.selected.length; i++) {
+            $('td').each(function() {
+                if ($(this).html() == data.selected[i]) {
+                    $(this).addClass('disabled');
+                }
+            });
+        }
+    });
+
 });
 </script>
 </head>
 <body>
 <div id="chatwin">
- <div id="title">Branded Chat</div>
+ <div id="title">Gashouse Chat</div>
  <div id="dialog"></div>
  <div id="users"></div>
+ <div id="gameboard">
+  <table>
+   <tr><td class="red">1</td><td class="black">2</td><td class="red">3</td><td class="black">4</td><td class="red">5</td><td class="black">6</td><td class="red">7</td</tr>
+   <tr><td class="black">8</td><td class="red">9</td><td class="black">10</td><td class="red">11</td><td class="black">12</td><td class="red">13</td><td class="black">14</td></tr>
+   <tr><td class="red">15</td><td class="black">16</td><td class="red">17</td><td class="black">18</td><td class="red">19</td><td class="black">20</td><td class="red">21</td</tr>
+   <tr><td class="black">22</td><td class="red">23</td><td class="black">24</td><td class="red">25</td><td class="black">26</td><td class="red">27</td><td class="black">28</td></tr>
+   <tr><td class="red">29</td><td class="black">30</td><td class="red">31</td><td class="black">32</td><td class="red">33</td><td class="black">34</td><td class="red">35</td</tr>
+   <tr><td class="black">36</td><td class="red">37</td><td class="black">38</td><td class="red">39</td><td class="black">40</td><td class="red">41</td><td class="black">42</td></tr>
+   <tr><td class="red">43</td><td class="black">44</td><td class="red">45</td><td class="black">46</td><td class="red">47</td><td class="black">48</td><td class="red">49</td</tr>
+   <tr><td class="black">50</td><td class="red">51</td><td class="black">52</td><td class="red">53</td><td class="black">54</td><td class="red">55</td><td class="black">56</td></tr>
+   <tr><td class="red">57</td><td class="black">58</td><td class="red">59</td><td class="black">60</td><td class="red">61</td><td class="black">62</td><td class="red">63</td</tr>
+   <tr><td class="black">64</td><td class="red">65</td><td class="black">66</td><td class="red">67</td><td class="black">68</td><td class="red">69</td><td class="black">70</td></tr>
+   <tr><td class="red">71</td><td class="black">72</td><td class="red">73</td><td class="black">74</td><td class="red">75</td><td class="black">76</td><td class="red">77</td</tr>
+   <tr><td class="black">78</td><td class="red">79</td><td class="black">80</td><td class="red">81</td><td class="black">82</td><td class="red">83</td><td class="black">84</td></tr>
+   <tr><td class="red">85</td><td class="black">86</td><td class="red">87</td><td class="black">88</td><td class="red">89</td><td class="black">90</td><td class="red">91</td</tr>
+   <tr><td class="black">92</td><td class="red">93</td><td class="black">94</td><td class="red">95</td><td class="black">96</td><td class="red">97</td><td class="black">98</td></tr>
+   <tr><td class="red"></td><td class="black"></td><td class="red">99</td><td class="black">100</td><td class="red"></td><td class="black"></td><td class="red"></td</tr>
+  </table>
+ </div>
  <div id="label_nick">Nickname:</div><input id="nick" value=""><br>
  <textarea id="stuff"></textarea>
 </div>
