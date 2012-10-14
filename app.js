@@ -6,9 +6,11 @@ var senderlist = [];
 
 // for game
 var selections = [];
-var game_enabled = true;
+var game_enabled = false;
 
-var colors = ['red','green','blue','orange','purple']
+var colors = ['red','green','blue','orange','purple'];
+
+var admin_list = {};
 
 app.listen(process.env.PORT || 5000);
 
@@ -43,16 +45,24 @@ io.sockets.on('connection', function (socket) {
     // admin commands, 
     // todo add auth client first
     // parse admin commands in seperate method
-    if (data.msg == '/gamestart') {
+    if (data.msg == '/gamestart' && admin_list[socket.id]) {
         selections = [];
         game_enabled = true;
     	io.sockets.emit('gamestart', {});        
       	io.sockets.emit('gamenews', {selected:selections});
-    } else if (data.msg == '/gamestop') {
+
+    } else if (data.msg == '/gamestop' && admin_list[socket.id]) {
         game_enabled = false;
     	io.sockets.emit('gamestop', {});
+
+    } else if (data.msg == '/auth '+process.env.AUTH_PW) {
+        console.log('auth ok');
+        // set client as authorized
+        admin_list[socket.id] = true;
+        socket.emit('news', {msg:'Authorization successful', sender:"SYSTEM", color:'black', senderlist:senderlist} );
+        console.log(admin_list)
+
     } else {
-    
 	    // require a sender
 	    if (data.sender != '') {
 	        pos = lookup(data.sender)
@@ -93,4 +103,5 @@ io.sockets.on('connection', function (socket) {
 	senderlist[pos]['nick'] = data.sender
     io.sockets.emit('namechange', {msg:msg, sender:"SYSTEM", color:'black', senderlist:senderlist} );
   });
+
 });
