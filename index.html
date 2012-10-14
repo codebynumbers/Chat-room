@@ -144,6 +144,7 @@ jQuery(document).ready(function() {
     $('td').click(function() {
         if (!chose && !$(this).hasClass('disabled') && nick != '') {
             $(this).addClass('disabled')
+            $(this).attr('title', nick)
             chose = true;
             socket.emit('speak', { msg:nick+' chose '+$.trim($(this).html()), sender:nick });
             socket.emit('choose', { value:$(this).html(), sender:nick });
