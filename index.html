@@ -58,7 +58,7 @@ td {
  border:solid silver 1px;
  float:left;
  overflow-y:scroll;
- display:none;
+// display:none;
 }
 #gameboard {
  padding:5px;
@@ -67,6 +67,7 @@ td {
  height:300px;
  border:solid silver 1px;
  float:left;
+ display:none;
 }
 #label_nick {
  padding:5px;
@@ -92,7 +93,6 @@ td {
 jQuery(document).ready(function() { 
     var socket = io.connect('/');
 	var nick = $('#nick').val()
-    var numbers = {};
     var chose = false;
 
     socket.on('news', function (data) {
@@ -149,16 +149,31 @@ jQuery(document).ready(function() {
             socket.emit('choose', { value:$(this).html(), sender:nick });
         }
     });
-
+    // rewite to use a hashmap of numbers and users for hover text
     socket.on('gamenews', function (data) {
         console.log(data)
-        for (i=0; i<data.selected.length; i++) {
-            $('td').each(function() {
+        $('td').each(function() {
+            // reset board
+            $(this).removeClass('disabled');
+            for (i=0; i<data.selected.length; i++) {
                 if ($(this).html() == data.selected[i]) {
                     $(this).addClass('disabled');
+                    continue;
                 }
-            });
-        }
+            }
+        });
+    });
+
+    socket.on('gamestop', function (data) {
+        $('#gameboard').slideUp(); // hide
+        $('#users').slideDown(); // show
+    });
+
+    socket.on('gamestart', function (data) {
+        // reset game state
+        chose = false;
+        $('#users').slideUp();  // hide
+        $('#gameboard').slideDown(); // show
     });
 
 });

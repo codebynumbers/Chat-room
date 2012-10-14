@@ -40,11 +40,25 @@ io.sockets.on('connection', function (socket) {
   ip = socket.handshake.address;
 
   socket.on('speak', function (data) {
-	// require a sender
-	if (data.sender != '') {
-	    pos = lookup(data.sender)
-    	io.sockets.emit('news', {msg:data.msg, sender:senderlist[pos]});
-	}
+    // admin commands, 
+    // todo add auth client first
+    // parse admin commands in seperate method
+    if (data.msg == '/gamestart') {
+        selections = [];
+        game_enabled = true;
+    	io.sockets.emit('gamestart', {});        
+      	io.sockets.emit('gamenews', {selected:selections});
+    } else if (data.msg == '/gamestop') {
+        game_enabled = false;
+    	io.sockets.emit('gamestop', {});
+    } else {
+    
+	    // require a sender
+	    if (data.sender != '') {
+	        pos = lookup(data.sender)
+    	    io.sockets.emit('news', {msg:data.msg, sender:senderlist[pos]});
+	    }
+    }
   });
 
   socket.on('choose', function (data) {
@@ -61,6 +75,7 @@ io.sockets.on('connection', function (socket) {
 		msg = data.sender+' has joined the chat' 
         if ( game_enabled ) {
             // push board data on join if game on
+        	io.sockets.emit('gamestart', {});        
         	io.sockets.emit('gamenews', {selected:selections});
         }
 	} else {
