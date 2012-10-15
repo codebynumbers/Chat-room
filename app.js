@@ -5,7 +5,7 @@ var app = require('http').createServer(handler)
 var senderlist = [];
 
 // for game
-var selections = [];
+var selections = {};
 var game_enabled = false;
 
 var colors = ['red','green','blue','orange','purple'];
@@ -46,7 +46,7 @@ io.sockets.on('connection', function (socket) {
     // parse admin commands in seperate method
     if (data.msg.match(/^\/gamestart/)) {
       if (admin_list[socket.id]) {
-        selections = [];
+        selections = {};
         game_enabled = true;
     	io.sockets.emit('gamestart', {});        
       	io.sockets.emit('gamenews', {selected:selections});
@@ -57,6 +57,16 @@ io.sockets.on('connection', function (socket) {
         if (admin_list[socket.id]) {
             game_enabled = false;
             io.sockets.emit('gamestop', {});
+        } else {
+            socket.emit('news', {msg:'Not authorized, /auth first', sender:"SYSTEM", color:'black', senderlist:senderlist} );
+        }
+    } else if (data.msg.match(/^\/choose/)) {
+        if (admin_list[socket.id] && game_enabled) {
+            parts = data.msg.split(' ')
+            if (parts[1] && parts[2].match(/\d+/)) {
+                selections[parts[2]] = parts[1]
+        	    io.sockets.emit('gamenews', {selected:selections});
+            }
         } else {
             socket.emit('news', {msg:'Not authorized, /auth first', sender:"SYSTEM", color:'black', senderlist:senderlist} );
         }
@@ -83,8 +93,13 @@ io.sockets.on('connection', function (socket) {
   socket.on('choose', function (data) {
 	// require a sender
 	if (data.sender != '') {
-        selections.push(data.value)
+      if (!selections[data.value]) {  
+        selections[data.value] = data.sender
+        console.log(selections)
     	io.sockets.emit('gamenews', {selected:selections});
+      } else { 
+        socket.emit('news', {msg:'Invalid choice', sender:"SYSTEM", color:'black', senderlist:senderlist} );
+      }
 	}
   });
 

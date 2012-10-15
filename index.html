@@ -156,11 +156,10 @@ jQuery(document).ready(function() {
         $('td').each(function() {
             // reset board
             $(this).removeClass('disabled');
-            for (i=0; i<data.selected.length; i++) {
-                if ($(this).html() == data.selected[i]) {
-                    $(this).addClass('disabled');
-                    continue;
-                }
+            num = $.trim($(this).html())
+            if (data.selected[num]) {
+                $(this).addClass('disabled');
+                $(this).attr('title',data.selected[num])
             }
         });
     });
