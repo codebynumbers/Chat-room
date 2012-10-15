@@ -43,25 +43,34 @@ io.sockets.on('connection', function (socket) {
 
   socket.on('speak', function (data) {
     // admin commands, 
-    // todo add auth client first
     // parse admin commands in seperate method
-    if (data.msg == '/gamestart' && admin_list[socket.id]) {
+    if (data.msg.match(/^\/gamestart/)) {
+      if (admin_list[socket.id]) {
         selections = [];
         game_enabled = true;
     	io.sockets.emit('gamestart', {});        
       	io.sockets.emit('gamenews', {selected:selections});
-
-    } else if (data.msg == '/gamestop' && admin_list[socket.id]) {
-        game_enabled = false;
-    	io.sockets.emit('gamestop', {});
-
-    } else if (data.msg == '/auth '+process.env.AUTH_PW) {
+      } else {
+        socket.emit('news', {msg:'Not authorized, /auth first', sender:"SYSTEM", color:'black', senderlist:senderlist} );
+      }
+    } else if (data.msg.match(/^\/gamestop/)) {
+        if (admin_list[socket.id]) {
+            game_enabled = false;
+            io.sockets.emit('gamestop', {});
+        } else {
+            socket.emit('news', {msg:'Not authorized, /auth first', sender:"SYSTEM", color:'black', senderlist:senderlist} );
+        }
+    } else if (data.msg.match(/^\/auth/)) {
+      if (data.msg == '/auth '+process.env.AUTH_PW) {
         console.log('auth ok');
         // set client as authorized
         admin_list[socket.id] = true;
         socket.emit('news', {msg:'Authorization successful', sender:"SYSTEM", color:'black', senderlist:senderlist} );
         console.log(admin_list)
-
+      } else {
+        socket.emit('news', {msg:'Authorization failed', sender:"SYSTEM", color:'black', senderlist:senderlist} );
+      }
+    // Regular chat - not a command
     } else {
 	    // require a sender
 	    if (data.sender != '') {
