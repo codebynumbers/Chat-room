@@ -101,11 +101,15 @@ jQuery(document).ready(function() {
 		$("#dialog").attr({ scrollTop: $("#dialog").attr("scrollHeight") });
     });
     
-    socket.on('namechange', function (data) {
+    socket.on('fullupdate', function (data) {
         console.log(data)
         buffer = ''
-        for (i=0; i<data.senderlist.length; i++) {
-            buffer += '<span style="color:'+data.senderlist[i]['color']+'">'+data.senderlist[i]['nick']+'</span><br>'
+        for (sender in data.senderlist) {
+            buffer += '<span style="color:'+data.senderlist[sender]['color']+'"'
+            if (data['show_ip']) {
+                buffer += ' title="'+data.senderlist[sender]['ip']['address']
+            }
+            buffer += '">'+data.senderlist[sender]['nick']+'</span><br>'
         }
         $('#users').html(buffer)
 		// system message

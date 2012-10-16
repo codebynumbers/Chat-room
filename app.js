@@ -2,15 +2,17 @@ var app = require('http').createServer(handler)
   , io = require('socket.io').listen(app)
   , fs = require('fs')
 
-var senderlist = [];
+
+var colors = ['red','green','blue','orange','purple'];
+
+var senderlist = {};
+var ban_list = {}
+var admin_list = {};
 
 // for game
 var selections = {};
 var game_enabled = false;
 
-var colors = ['red','green','blue','orange','purple'];
-
-var admin_list = {};
 
 app.listen(process.env.PORT || 5000);
 
@@ -24,17 +26,6 @@ function handler (req, res) {
     res.writeHead(200);
     res.end(data);
   });
-}
-
-function lookup(sender){
-	found = -1
-	for (i=0; i<senderlist.length; i++){
-		if(senderlist[i]['nick'] == sender){
-			found = i
-			break;
-		}
-	}
-	return found
 }
 
 io.sockets.on('connection', function (socket) {
@@ -51,14 +42,14 @@ io.sockets.on('connection', function (socket) {
     	io.sockets.emit('gamestart', {});        
       	io.sockets.emit('gamenews', {selected:selections});
       } else {
-        socket.emit('news', {msg:'Not authorized, /auth first', sender:"SYSTEM", color:'black', senderlist:senderlist} );
+        socket.emit('fullupdate', {msg:'Not authorized, /auth first', sender:"SYSTEM", color:'black', senderlist:senderlist, show_ip:admin_list[socket.id]} );
       }
     } else if (data.msg.match(/^\/gamestop/)) {
         if (admin_list[socket.id]) {
             game_enabled = false;
             io.sockets.emit('gamestop', {});
         } else {
-            socket.emit('news', {msg:'Not authorized, /auth first', sender:"SYSTEM", color:'black', senderlist:senderlist} );
+            socket.emit('fullupdate', {msg:'Not authorized, /auth first', sender:"SYSTEM", color:'black', senderlist:senderlist, show_ip:admin_list[socket.id]} );
         }
     } else if (data.msg.match(/^\/choose/)) {
         if (admin_list[socket.id] && game_enabled) {
@@ -68,24 +59,37 @@ io.sockets.on('connection', function (socket) {
         	    io.sockets.emit('gamenews', {selected:selections});
             }
         } else {
-            socket.emit('news', {msg:'Not authorized, /auth first', sender:"SYSTEM", color:'black', senderlist:senderlist} );
+            socket.emit('fullupdate', {msg:'Not authorized, /auth first', sender:"SYSTEM", color:'black', senderlist:senderlist, show_ip:admin_list[socket.id]} );
+        }
+    } else if (data.msg.match(/^\/ban/)) {
+        if (admin_list[socket.id]) {
+            parts = data.msg.split(' ')
+            if (parts[1].match(/\d+\.\d+\.\d+\.\d+/)) {
+                //console.log("banning "+parts[1]);
+                ban_list[parts[1]] = true;
+                check_ban_list(socket);
+                socket.emit('fullupdate', {msg:'Banning '+parts[1], sender:"SYSTEM", color:'black', senderlist:senderlist, show_ip:admin_list[socket.id]} );
+            }
+        } else {
+            socket.emit('fullupdate', {msg:'Not authorized, /auth first', sender:"SYSTEM", color:'black', senderlist:senderlist, show_ip:admin_list[socket.id]} );
         }
     } else if (data.msg.match(/^\/auth/)) {
       if (data.msg == '/auth '+process.env.AUTH_PW) {
-        console.log('auth ok');
+        //console.log('auth ok');
         // set client as authorized
         admin_list[socket.id] = true;
-        socket.emit('news', {msg:'Authorization successful', sender:"SYSTEM", color:'black', senderlist:senderlist} );
-        console.log(admin_list)
+        socket.emit('fullupdate', {msg:'Authorization successful', sender:"SYSTEM", color:'black', senderlist:senderlist, show_ip:admin_list[socket.id]} );
+        //console.log(admin_list)
       } else {
-        socket.emit('news', {msg:'Authorization failed', sender:"SYSTEM", color:'black', senderlist:senderlist} );
+        socket.emit('fullupdate', {msg:'Authorization failed', sender:"SYSTEM", color:'black', senderlist:senderlist, show_ip:admin_list[socket.id]} );
       }
     // Regular chat - not a command
     } else {
 	    // require a sender
-	    if (data.sender != '') {
-	        pos = lookup(data.sender)
-    	    io.sockets.emit('news', {msg:data.msg, sender:senderlist[pos]});
+        //console.log('ban_list '+ban_list)
+        //console.log('ip '+ip.address)
+	    if (data.sender != '' && !ban_list[ip.address]) {
+    	    io.sockets.emit('news', {msg:data.msg, sender:senderlist[socket.id]});
 	    }
     }
   });
@@ -95,16 +99,22 @@ io.sockets.on('connection', function (socket) {
 	if (data.sender != '') {
       if (!selections[data.value]) {  
         selections[data.value] = data.sender
-        console.log(selections)
+        //console.log(selections)
     	io.sockets.emit('gamenews', {selected:selections});
       } else { 
-        socket.emit('news', {msg:'Invalid choice', sender:"SYSTEM", color:'black', senderlist:senderlist} );
+        socket.emit('fullupdate', {msg:'Invalid choice', sender:"SYSTEM", color:'black', senderlist:senderlist, show_ip:admin_list[socket.id]} );
       }
 	}
   });
 
   socket.on('namechange', function (data) {
     //console.log(data);
+    for (sender in senderlist) {    
+        if (senderlist[sender]['nick'].toLowerCase() == data.sender.toLowerCase()) {
+            socket.emit('fullupdate', {msg:"That name already exists, choose another", sender:"SYSTEM", color:'black', senderlist:senderlist, show_ip:admin_list[socket.id]} );
+            return;
+        }
+    }
 	if (data.old_sender == '') {
 		msg = data.sender+' has joined the chat' 
         if ( game_enabled ) {
@@ -116,16 +126,30 @@ io.sockets.on('connection', function (socket) {
 		msg = data.old_sender+' now known as '+data.sender
 	}
 
-    pos = lookup(data.old_sender)
-	// add new sender to list
-    if (pos == -1){
-		color = colors[Math.floor(Math.random() * colors.length)]
-		senderlist.push({'nick':data.sender, 'color':color, ip:ip})
-		pos = senderlist.length-1
-	}
-	// change name
-	senderlist[pos]['nick'] = data.sender
-    io.sockets.emit('namechange', {msg:msg, sender:"SYSTEM", color:'black', senderlist:senderlist} );
+    color = colors[Math.floor(Math.random() * colors.length)]
+	senderlist[socket.id] = {'nick':data.sender, 'color':color, 'ip':ip}
+    io.sockets.emit('fullupdate', {msg:msg, sender:"SYSTEM", color:'black', senderlist:senderlist, show_ip:admin_list[socket.id]} );
   });
+
+  socket.on('disconnect', function () {
+    try {
+      elvis = senderlist[socket.id]['nick']
+      delete senderlist[socket.id];    
+      io.sockets.emit('fullupdate', {msg:elvis+' has left the building', sender:"SYSTEM", color:'black', senderlist:senderlist, show_ip:admin_list[socket.id]} );
+    } catch (e) { }
+  });
+
+  function check_ban_list(socket) {
+    //console.log('check_ban_list '+ban_list)
+    for (sender in senderlist) {
+      //console.log(senderlist[sender])
+      if (ban_list[senderlist[sender]['ip']['address']]) {
+         user = senderlist[sender]['nick']
+         //console.log('banning ip: '+senderlist[sender]['ip']['address']+' user: '+user);
+         delete senderlist[sender];  
+         io.sockets.emit('fullupdate', {msg:user+' has been banned', sender:"SYSTEM", color:'black', senderlist:senderlist, show_ip:admin_list[socket.id]} );
+      } 
+    }
+  }
 
 });
