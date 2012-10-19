@@ -2,13 +2,11 @@ var app = require('http').createServer(handler)
    , io = require('socket.io').listen(app)
    , fs = require('fs')
 
-
 var colors = ['blue', 'fuchsia', 'green', 'lime', 'maroon', 'navy', 'olive', 'purple', 'red', 'teal'];
 var senderlist = {};
 var ban_list = {}
 var admin_list = {};
 var password = process.env.AUTH_PW
-
 
 // for game
 var selections = {};
@@ -39,6 +37,16 @@ function sysmesg(socket, message, extra) {
     // merge in extra data
     for (var attrname in extra) { data[attrname] = extra[attrname]; }
     socket.emit('fullupdate', data );
+}
+
+function check_ban_list() {
+    for (sender in senderlist) {
+        if (ban_list[senderlist[sender]['ip']['address']]) {
+            msg = senderlist[sender]['nick']+' has been banned'
+            delete senderlist[sender];
+            sysmesg(io.sockets, msg);
+        }
+    }
 }
 
 io.sockets.on('connection', function (socket) {
@@ -93,7 +101,7 @@ io.sockets.on('connection', function (socket) {
                 parts = data.msg.split(' ')
                 if (parts[1].match(/\d+\.\d+\.\d+\.\d+/)) {
                     ban_list[parts[1]] = true;
-                    check_ban_list(socket);
+                    check_ban_list();
                     sysmesg(socket, 'Banning '+parts[1])
                 }
             } else {
@@ -163,13 +171,4 @@ io.sockets.on('connection', function (socket) {
         } catch (e) { console.log(e) }
     });
 
-    function check_ban_list(socket) {
-        for (sender in senderlist) {
-            if (ban_list[senderlist[sender]['ip']['address']]) {
-                msg = senderlist[sender]['nick']+' has been banned'
-                delete senderlist[sender];
-                sysmesg(io.sockets, msg);
-            }
-        }
-    }
 });
