@@ -33,42 +33,44 @@
             .disabled {
                 background-color:silver;
             }
+            #wrap { 
+                float:left; 
+            }
             #chatwin {
                 background-color:#DDD;
                 font-family:  monospace;sans-serif;
                 font-size:13.3333px;
-                width:604px;
-                padding:5px;
+                width:620px;
+                height:420px;
             }
             #title {
-                padding:1px;
+                padding:5px;
                 font-weight:bold;
                 font-size:11px;
             }
             #dialog {
-                padding:5px;
+                margin-left:5px;
+                padding:3px;
                 width:430px;
-                height:300px;
+                height:280px;
                 border:solid silver 1px;
-                float:left;
                 overflow-y:scroll;
                 background-color:#FFF;
             }
             #users {
                 padding:5px;
                 background-color:#FDFDFD;
-                width:150px;
-                height:300px;
+                width:160px;
+                height:310px;
                 border:solid silver 1px;
                 float:left;
                 overflow-y:scroll;
-                // display:none;
             }
             #gameboard {
                 padding:5px;
                 background-color:green;
-                width:150px;
-                height:300px;
+                width:160px;
+                height:315px;
                 border:solid silver 1px;
                 float:left;
                 display:none;
@@ -81,13 +83,14 @@
                 margin-top:5px;
             }
             #nick {
-                width:490px;
-                float:left;
+                width:322px;
                 margin-top:5px;
             }
             #stuff{
-                width:604px;
-                height:60px;
+                margin-left:5px;
+                padding:3px;
+                width:595px;
+                height:50px;
                 clear:left;
             }
         </style>
@@ -155,6 +158,7 @@
                         $(this).addClass('disabled')
                         $(this).attr('title', nick)
                         chose = true;
+                        console.log($.trim($(this).html()))
                         socket.emit('speak', { msg:nick+' chose '+$.trim($(this).html()), sender:nick });
                         socket.emit('choose', { value:$(this).html(), sender:nick });
                     }
@@ -176,6 +180,7 @@
                 socket.on('gamestop', function (data) {
                     $('#gameboard').slideUp(); // hide
                     $('#users').slideDown(); // show
+                    chose = false
                 });
 
                 socket.on('gamestart', function (data) {
@@ -191,7 +196,10 @@
     <body>
         <div id="chatwin">
             <div id="title">Gashouse Chat</div>
-            <div id="dialog"></div>
+            <div id="wrap">
+                <div id="dialog"></div>
+                <div id="label_nick">Nickname:</div><input id="nick" value="">
+            </div>
             <div id="users"></div>
             <div id="gameboard">
                 <table>
@@ -209,10 +217,9 @@
                     <tr><td class="black">78</td><td class="red">79</td><td class="black">80</td><td class="red">81</td><td class="black">82</td><td class="red">83</td><td class="black">84</td></tr>
                     <tr><td class="red">85</td><td class="black">86</td><td class="red">87</td><td class="black">88</td><td class="red">89</td><td class="black">90</td><td class="red">91</td</tr>
                     <tr><td class="black">92</td><td class="red">93</td><td class="black">94</td><td class="red">95</td><td class="black">96</td><td class="red">97</td><td class="black">98</td></tr>
-                    <tr><td class="red">99</td><td class="black"></td><td class="red"></td><td class="black"></td><td class="red"></td><td class="black"></td><td class="red">100</td</tr>
+                    <tr><td class="red">99</td><td class="black"></td><td class="red"></td><td class="black"></td><td class="red"></td><td class="black"></td><td class="red">100</td></tr>
                 </table>
             </div>
-            <div id="label_nick">Nickname:</div><input id="nick" value=""><br>
             <textarea id="stuff"></textarea>
         </div>
     </body>
