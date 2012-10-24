@@ -2,7 +2,7 @@ var app = require('http').createServer(handler)
    , io = require('socket.io').listen(app)
    , fs = require('fs')
 
-var colors = ['blue', 'fuchsia', 'green', 'lime', 'maroon', 'navy', 'olive', 'purple', 'red', 'teal'];
+var colors = ['blue', 'fuchsia', 'green', 'maroon', 'navy', 'olive', 'purple', 'red', 'teal'];
 var senderlist = {};
 var ban_list = {}
 var admin_list = {};
@@ -49,12 +49,28 @@ function check_ban_list() {
     }
 }
 
+function linkify(inputText) {
+    // http://stackoverflow.com/questions/37684/how-to-replace-plain-urls-with-links
+    // URLs starting with http://, https://, or ftp://
+    var replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+    var replacedText = inputText.replace(replacePattern1, '<a href="$1" target="_blank">$1</a>');
+
+    //URLs starting with www. (without // before it, or it'd re-link the ones done above)
+    var replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+    var replacedText = replacedText.replace(replacePattern2, '$1<a href="http://$2" target="_blank">$2</a>');
+
+    //Change email addresses to mailto:: links
+    var replacePattern3 = /(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6})/gim;
+    var replacedText = replacedText.replace(replacePattern3, '<a href="mailto:$1">$1</a>');
+
+    return replacedText
+}
+
 io.sockets.on('connection', function (socket) {
 
     ip = socket.handshake.address;
 
     socket.on('speak', function (data) {
-        console.log(data)
         if (!data.sender) {
             sysmesg(socket, 'Sender name required')
             return
@@ -116,11 +132,19 @@ io.sockets.on('connection', function (socket) {
                 sysmesg(socket, 'Authorization failed')
             }
         } else {
+            // Filter html tags
+            data.msg = data.msg.replace(/(<([^>]+)>)/ig,"");
+            // linkify
+            data.msg = linkify(data.msg)
+            // trim whitespace
+            data.msg = data.msg.replace(/^\s+|\s+$/g, '');
             // Regular chat - not a command
-            io.sockets.emit('news', {
-                msg:data.msg,
-                sender:senderlist[socket.id]
-            });
+            if (data.msg != '') {
+                io.sockets.emit('news', {
+                    msg:data.msg,
+                    sender:senderlist[socket.id]
+                });
+            }
         }
     });
 
