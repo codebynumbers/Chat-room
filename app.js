@@ -12,6 +12,7 @@ var password = process.env.AUTH_PW
 var selections = {};
 var game_enabled = false;
 
+io.set('log level', 1);
 
 app.listen(process.env.PORT || 5000);
 
@@ -40,10 +41,13 @@ function sysmesg(socket, message, extra) {
 }
 
 function check_ban_list() {
+    console.log("banlist:" +ban_list)
     for (sender in senderlist) {
+        console.log("sender: "+senderlist[sender]['ip']['address'])
         if (ban_list[senderlist[sender]['ip']['address']]) {
+            console.log("banning "+senderlist[sender]['ip']['address'])
             msg = senderlist[sender]['nick']+' has been banned'
-            delete senderlist[sender];
+            //delete senderlist[sender];
             sysmesg(io.sockets, msg);
         }
     }
@@ -75,7 +79,7 @@ io.sockets.on('connection', function (socket) {
             sysmesg(socket, 'Sender name required')
             return
         }
-        if (ban_list[ip.address]){
+        if (!admin_list[socket.id] && ban_list[ip.address]){
             sysmesg(socket, "You\'ve been banned")
             return
         }
@@ -117,8 +121,22 @@ io.sockets.on('connection', function (socket) {
                 parts = data.msg.split(' ')
                 if (parts[1].match(/\d+\.\d+\.\d+\.\d+/)) {
                     ban_list[parts[1]] = true;
+                    console.log(ban_list)
                     check_ban_list();
                     sysmesg(socket, 'Banning '+parts[1])
+                }
+            } else {
+                sysmesg(socket, 'Not authorized, /auth first')
+            }
+        } else if (data.msg.match(/^\/unban/)) {
+            if (admin_list[socket.id]) {
+                parts = data.msg.split(' ')
+                if (parts[1].match(/\d+\.\d+\.\d+\.\d+/)) {
+                    console.log(ban_list)
+                    console.log("Unbanning: "+parts[1])
+                    delete ban_list[parts[1]];
+                    console.log(ban_list)
+                    sysmesg(socket, 'Unbanning '+parts[1])
                 }
             } else {
                 sysmesg(socket, 'Not authorized, /auth first')
