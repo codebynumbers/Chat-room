@@ -158,9 +158,10 @@
                         $(this).addClass('disabled')
                         $(this).attr('title', nick)
                         chose = true;
-                        console.log($.trim($(this).html()))
+                        selected = $.trim($(this).html())
+                        //console.log(selected)
                         socket.emit('speak', { msg:nick+' chose '+$.trim($(this).html()), sender:nick });
-                        socket.emit('choose', { value:$(this).html(), sender:nick });
+                        socket.emit('choose', { value:selected, sender:nick });
                     }
                 });
                 // rewite to use a hashmap of numbers and users for hover text

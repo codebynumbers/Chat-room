@@ -168,6 +168,7 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('choose', function (data) {
         if (!selections[data.value]) {
+			//console.log("selected:"+data.value)
             selections[data.value] = data.sender
             io.sockets.emit('gamenews', {
                 selected:selections
@@ -186,8 +187,9 @@ io.sockets.on('connection', function (socket) {
         if (data.old_sender == '') {
             msg = data.sender+' has joined the chat'
             if ( game_enabled ) {
+				// only send start to this client
+                socket.emit('gamestart', {});
                 // push board data on join if game on
-                io.sockets.emit('gamestart', {});
                 io.sockets.emit('gamenews', {
                     selected:selections
                 });
