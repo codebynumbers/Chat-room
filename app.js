@@ -12,7 +12,23 @@ var password = process.env.AUTH_PW
 var selections = {};
 var game_enabled = false;
 
-io.set('log level', 1);
+io.configure('production', function(){
+  io.enable('browser client etag');
+  io.set('log level', 1);
+
+  io.set('transports', [
+    'websocket'
+  , 'flashsocket'
+  , 'htmlfile'
+  , 'xhr-polling'
+  , 'jsonp-polling'
+  ]);
+});
+
+io.configure('development', function(){
+  io.set('transports', ['websocket']);
+});
+
 
 app.listen(process.env.PORT || 5000);
 
